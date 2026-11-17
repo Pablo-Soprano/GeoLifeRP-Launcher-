@@ -20,15 +20,23 @@ jobs:
         with:
           gradle-version: '8.7'
 
+      - name: Unzip project
+        run: |
+          ZIP=$(find . -maxdepth 2 -name '*.zip' | head -1)
+          echo "Zip: $ZIP"
+          [ -n "$ZIP" ] || { echo "ERROR: zip ar aris repo-shi"; exit 1; }
+          unzip -q -o "$ZIP" -d _src
+
       - name: Build debug APK
         run: |
-          DIR=$(dirname "$(find . -name settings.gradle.kts | head -1)")
-          echo "Project dir: $DIR"
-          cd "$DIR"
+          S=$(find _src -name settings.gradle.kts | head -1)
+          [ -n "$S" ] || { echo "ERROR: settings.gradle.kts ar vipove"; exit 1; }
+          cd "$(dirname "$S")"
+          echo "Project dir: $PWD"
           gradle assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: GeoLifeRP-Mobile-apk
-          path: '**/build/outputs/apk/debug/*.apk'
+          path: '_src/**/build/outputs/apk/debug/*.apk'
